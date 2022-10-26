@@ -1,17 +1,20 @@
 #include <ArduinoBLE.h>
 #include <Arduino_LSM6DS3.h>
 
-BLEService ledService("180A"); // BLE LED Service
+#define BLE_UUID_ACCELEROMETER_SERVICE "1101"
+#define BLE_UUID_ACCELEROMETER_X "2101"
+#define BLE_UUID_ACCELEROMETER_Y "2102"
+#define BLE_UUID_ACCELEROMETER_Z "2103"
 
-// BLE LED Switch Characteristic - custom 128-bit UUID, read and writable by central
-BLEByteCharacteristic switchCharacteristic("2A57", BLERead | BLEWrite);
+BLEService accelerometerService(BLE_UUID_ACCELEROMETER_SERVICE);
+
+BLEFloatCharacteristic accelerometerCharacteristicX(BLE_UUID_ACCELEROMETER_X, BLERead | BLENotify);
+BLEFloatCharacteristic accelerometerCharacteristicY(BLE_UUID_ACCELEROMETER_Y, BLERead | BLENotify);
+BLEFloatCharacteristic accelerometerCharacteristicZ(BLE_UUID_ACCELEROMETER_Z, BLERead | BLENotify);
 
 void setup() {
   Serial.begin(9600);
   while (!Serial);
-
-  // set built in LED pin to output mode
-  pinMode(LED_BUILTIN, OUTPUT);
 
   // initialize IMU
   if (!IMU.begin()) {
@@ -27,13 +30,6 @@ void setup() {
   Serial.println("Acceleration in g's");
   Serial.println("X\tY\tZ");
 
-  Serial.print("Gyroscope sample rate = ");
-  Serial.print(IMU.gyroscopeSampleRate());
-  Serial.println(" Hz");
-  Serial.println();
-  Serial.println("Gyroscope in degrees/second");
-  Serial.println("X\tY\tZ");
-
   // initialize bluetooth
   if (!BLE.begin()) {
     Serial.println("starting Bluetooth® Low Energy failed!");
@@ -43,21 +39,20 @@ void setup() {
 
   // set advertised local name and service UUID:
   BLE.setLocalName("Nano 33 IoT");
-  BLE.setAdvertisedService(ledService);
+  BLE.setAdvertisedService(accelerometerService);
 
-  // add the characteristic to the service
-  ledService.addCharacteristic(switchCharacteristic);
+  // add the characteristics to the service
+  accelerometerService.addCharacteristic(accelerometerCharacteristicX);
+  accelerometerService.addCharacteristic(accelerometerCharacteristicY);
+  accelerometerService.addCharacteristic(accelerometerCharacteristicZ);
 
   // add service
-  BLE.addService(ledService);
-
-  // set the initial value for the characteristic:
-  switchCharacteristic.writeValue(0);
+  BLE.addService(accelerometerService);
 
   // start advertising
   BLE.advertise();
 
-  Serial.println("BLE LED Peripheral");
+  Serial.println("BLE Accelerometer Peripheral");
 }
 
 void loop() {
@@ -74,68 +69,23 @@ void loop() {
     while (central.connected()) {
       // setup IMU vars
       float ax, ay, az;
-      float gx, gy, gz;
 
-      if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
+      if (IMU.accelerationAvailable()) {
         IMU.readAcceleration(ax, ay, az);
-        IMU.readGyroscope(gx, gy, gz);
 
         Serial.print(ax);
         Serial.print('\t');
         Serial.print(ay);
         Serial.print('\t');
-        Serial.print(az);
-        Serial.print('\t');
-        Serial.print(gx);
-        Serial.print('\t');
-        Serial.print(gy);
-        Serial.print('\t');
-        Serial.println(gz);
-      }
-
-      // if the remote device wrote to the characteristic,
-      // use the value to control the LED:
-      if (switchCharacteristic.written()) {
-        switch (switchCharacteristic.value()) {   // any value other than 0
-          case 01:
-            Serial.println("sending IMU values");
-            rapidBlink();
-            // write to phone, but this doesn't work, need to figure out
-            // 1. how to write decimals
-            // 2. how to write multiple values
-            switchCharacteristic.writeValue(ax);
-            switchCharacteristic.writeValue(ay);
-            switchCharacteristic.writeValue(az);
-            switchCharacteristic.writeValue(gx);
-            switchCharacteristic.writeValue(gy);
-            switchCharacteristic.writeValue(gz);
-            break;
-          default:
-            Serial.println(F("LED off"));
-            digitalWrite(LED_BUILTIN, LOW);          // will turn the LED off
-            break;
-        }
+        Serial.println(az);
+        accelerometerCharacteristicX.writeValue(ax);
+        accelerometerCharacteristicY.writeValue(ay);
+        accelerometerCharacteristicZ.writeValue(az);
       }
     }
 
     // when the central disconnects, print it out:
     Serial.print(F("Disconnected from central: "));
     Serial.println(central.address());
-    digitalWrite(LED_BUILTIN, LOW);         // will turn the LED off
   }
-}
-
-void rapidBlink() {
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(500);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(500);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(500);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(500);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(500);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(500);
 }
