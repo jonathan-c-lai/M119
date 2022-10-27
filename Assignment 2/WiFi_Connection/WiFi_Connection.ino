@@ -1,8 +1,11 @@
 #include <WiFiNINA.h>
 
-//please enter your sensitive data in the Secret tab
-char ssid[] = "joniphone";                // your network SSID (name)
-char pass[] = "";                // your network password (use for WPA, or use as key for WEP)
+// followed example from Arduino official website https://docs.arduino.cc/tutorials/nano-33-iot/wifi-connection
+// instructed by professor to follow along the example and replicate
+
+// instead of secret tab, because I did this locally, I just have ssid and pass here
+char ssid[] = "joniphone";
+char pass[] = "m119_m2a";
 
 int status = WL_IDLE_STATUS;             // the Wi-Fi radio's status
 int ledState = LOW;                       //ledState used to set the LED
@@ -29,7 +32,6 @@ void setup() {
     delay(10000);
   }
 
-  // you're connected now, so print out the data:
   Serial.println("You're connected to the network");
   Serial.println("---------------------------------------");
 }

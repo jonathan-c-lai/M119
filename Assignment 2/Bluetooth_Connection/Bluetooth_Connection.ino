@@ -1,5 +1,8 @@
 #include <ArduinoBLE.h>
 
+// followed example from Arduino official website https://docs.arduino.cc/tutorials/nano-33-iot/bluetooth
+// instructed by professor to follow along the example and replicate the code.
+
 long previousMillis = 0;
 int interval = 0;
 int ledState = LOW;
