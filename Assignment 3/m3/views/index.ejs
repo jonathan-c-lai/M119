@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	
+</head>
+
+<body>
+
+</body>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<script type="application/javascript">
+
+	const SERVERADDRESS = "http://127.0.0.1:3000"
+
+	// use XML HTTP request to grab data from the server (central)
+	let xmlhttp = new XMLHttpRequest()
+	xmlhttp.onreadystatechange = function () {
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+			let responseText = xmlhttp.responseText
+			let sensorValueX = parseFloat(JSON.parse(responseText).sensorValueX)
+			let sensorValueY = parseFloat(JSON.parse(responseText).sensorValueY)
+			let sensorValueZ = parseFloat(JSON.parse(responseText).sensorValueZ)
+
+			console.log("X: ", sensorValueX, "Y: ", sensorValueY, "Z: ", sensorValueZ)
+
+			// pipe values of X Y and Z of accelerometer into calculation of R/G/B respectively
+			let colorValueX = Math.max(0, Math.min((sensorValueX + 1) * 0.5, 1)) * 255
+			let colorValueY = Math.max(0, Math.min((sensorValueY + 1) * 0.5, 1)) * 255
+			let colorValueZ = Math.max(0, Math.min((sensorValueZ + 1) * 0.5, 1)) * 255
+			let color = "rgba(" + colorValueX + ", " + colorValueY + ", " + colorValueZ + ", 0.5" + ")"
+			d3.select("body").style("background-color", color)
+			
+		}
+	}
+
+	// periodically grab data
+	let getData = () => {
+		xmlhttp.open("POST", SERVERADDRESS, true)
+		xmlhttp.setRequestHeader("Content-type", "application/json")
+		xmlhttp.send("")
+		setTimeout(() => {
+			getData()
+		}, 10)
+	}
+
+	getData()
+
+</script>
+
+</html>
