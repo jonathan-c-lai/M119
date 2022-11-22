@@ -5,20 +5,29 @@
 // https://github.com/ucla-hci/m119/blob/main/m2b_peripheral/m2b_peripheral.ino
 // provided as a resource to help us complete this assignment
 
-#define BLE_UUID_ACCELEROMETER_SERVICE "1866" //1101
+#define BLE_UUID_ACCELEROMETER_SERVICE "1101" //1101
 #define BLE_UUID_ACCELEROMETER_X "2101"
 #define BLE_UUID_ACCELEROMETER_Y "2102"
 #define BLE_UUID_ACCELEROMETER_Z "2103"
+#define BLE_UUID_GYROSCOPE_X "2104"
+#define BLE_UUID_GYROSCOPE_Y "2105"
+#define BLE_UUID_GYROSCOPE_Z "2106"
 
 BLEService accelerometerService(BLE_UUID_ACCELEROMETER_SERVICE);
 
 BLEFloatCharacteristic accelerometerCharacteristicX(BLE_UUID_ACCELEROMETER_X, BLERead | BLENotify);
 BLEFloatCharacteristic accelerometerCharacteristicY(BLE_UUID_ACCELEROMETER_Y, BLERead | BLENotify);
 BLEFloatCharacteristic accelerometerCharacteristicZ(BLE_UUID_ACCELEROMETER_Z, BLERead | BLENotify);
+BLEFloatCharacteristic gyroscopeCharacteristicX(BLE_UUID_GYROSCOPE_X, BLERead | BLENotify);
+BLEFloatCharacteristic gyroscopeCharacteristicY(BLE_UUID_GYROSCOPE_Y, BLERead | BLENotify);
+BLEFloatCharacteristic gyroscopeCharacteristicZ(BLE_UUID_GYROSCOPE_Z, BLERead | BLENotify);
+
 
 void setup() {
   Serial.begin(9600);
   while (!Serial);
+
+  delay(5000);
 
   // initialize IMU
   if (!IMU.begin()) {
@@ -49,6 +58,9 @@ void setup() {
   accelerometerService.addCharacteristic(accelerometerCharacteristicX);
   accelerometerService.addCharacteristic(accelerometerCharacteristicY);
   accelerometerService.addCharacteristic(accelerometerCharacteristicZ);
+  accelerometerService.addCharacteristic(gyroscopeCharacteristicX);
+  accelerometerService.addCharacteristic(gyroscopeCharacteristicY);
+  accelerometerService.addCharacteristic(gyroscopeCharacteristicZ);
 
   // add service
   BLE.addService(accelerometerService);
@@ -56,7 +68,7 @@ void setup() {
   // start advertising
   BLE.advertise();
 
-  Serial.println("BLE Accelerometer Peripheral");
+  Serial.println("BLE Accelerometer/Gyroscope Peripheral");
 }
 
 void loop() {
@@ -73,18 +85,29 @@ void loop() {
     while (central.connected()) {
       // setup IMU vars
       float ax, ay, az;
+      float gx, gy, gz;
 
-      if (IMU.accelerationAvailable()) {
+      if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
         IMU.readAcceleration(ax, ay, az);
+        IMU.readGyroscope(gx, gy, gz);
 
         Serial.print(ax);
         Serial.print('\t');
         Serial.print(ay);
         Serial.print('\t');
-        Serial.println(az);
+        Serial.print(az);
+        Serial.print('\t');
+        Serial.print(gx);
+        Serial.print('\t');
+        Serial.print(gy);
+        Serial.print('\t');
+        Serial.println(gz);
         accelerometerCharacteristicX.writeValue(ax);
         accelerometerCharacteristicY.writeValue(ay);
         accelerometerCharacteristicZ.writeValue(az);
+        gyroscopeCharacteristicX.writeValue(gx);
+        gyroscopeCharacteristicY.writeValue(gy);
+        gyroscopeCharacteristicZ.writeValue(gz);
       }
     }
 

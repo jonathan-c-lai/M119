@@ -162,24 +162,37 @@
 	  let dxd = Math.floor(Math.random() * 2);
 	  let dyd = Math.floor(Math.random() * 2);
 
-	  let bot_goes_up = 0
+	  let i_go_up = 1
 
 	  // use XML HTTP request to grab data from the server (central)
 		let xmlhttp = new XMLHttpRequest()
 		let sensorValueX = NaN
 		let sensorValueY = NaN
 		let sensorValueZ = NaN
+		let sensorValuegX = NaN
+		let sensorValuegY = NaN
+		let sensorValuegZ = NaN
 		xmlhttp.onreadystatechange = function () {
 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 				let responseText = xmlhttp.responseText
 				sensorValueX = parseFloat(JSON.parse(responseText).sensorValueX)
 				sensorValueY = parseFloat(JSON.parse(responseText).sensorValueY)
 				sensorValueZ = parseFloat(JSON.parse(responseText).sensorValueZ)
+				sensorValuegX = parseFloat(JSON.parse(responseText).sensorValuegX)
+				sensorValuegY = parseFloat(JSON.parse(responseText).sensorValuegY)
+				sensorValuegZ = parseFloat(JSON.parse(responseText).sensorValuegZ)
 
 				//console.log("X: ", sensorValueX, "Y: ", sensorValueY, "Z: ", sensorValueZ)
 
 				if (gameState == 'play') {
-					if (sensorValueZ > 0.3) {
+					if (sensorValuegY > 300) {
+						i_go_up = 1
+					}
+					if (sensorValuegY < -300) {
+						i_go_up = -1
+					}
+
+					if (i_go_up == 1) {
 						paddle_1.style.top =
 						Math.max(
 							board_coord.top,
@@ -187,7 +200,7 @@
 						) + 'px';
 						paddle_1_coord = paddle_1.getBoundingClientRect();
 					}
-					if (sensorValueZ < -0.3) {
+					if (i_go_up == -1) {
 						paddle_1.style.top =
 						Math.min(
 							board_coord.bottom - paddle_common.height,
@@ -205,23 +218,6 @@
 					if (paddle_2_coord.top < 60) {
 						bot_goes_up = 0
 					}
-					if (bot_goes_up == 1) {
-						paddle_2.style.top =
-						Math.max(
-							board_coord.top,
-							paddle_2_coord.top - window.innerHeight * 0.05
-						) + 'px';
-						paddle_2_coord = paddle_2.getBoundingClientRect();
-					
-					} else {
-						paddle_2.style.top =
-						Math.min(
-							board_coord.bottom - paddle_common.height,
-							paddle_2_coord.top + window.innerHeight * 0.05
-						) + 'px';
-						paddle_2_coord = paddle_2.getBoundingClientRect();
-					}
-				
 				}
 			}
 		}
@@ -252,6 +248,25 @@
 			  moveBall(dx, dy, dxd, dyd);
 			});
 		  }
+		}
+		if (gameState == 'play') {
+			if (e.key == 'ArrowUp') {
+				paddle_2.style.top =
+					Math.max(
+					board_coord.top,
+					paddle_2_coord.top - window.innerHeight * 0.1
+					) + 'px';
+				paddle_2_coord = paddle_2.getBoundingClientRect();
+			}
+
+			if (e.key == 'ArrowDown') {
+				paddle_2.style.top =
+					Math.min(
+					board_coord.bottom - paddle_common.height,
+					paddle_2_coord.top + window.innerHeight * 0.1
+					) + 'px';
+				paddle_2_coord = paddle_2.getBoundingClientRect();
+			}
 		}
 	  });
 	
