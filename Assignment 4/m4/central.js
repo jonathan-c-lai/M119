@@ -5,7 +5,7 @@
 
 const noble = require('@abandonware/noble');
 
-const uuid_service = "1101"
+const uuid_service = "1101" //1101
 const uuid_valueX = "2101"
 const uuid_valueY = "2102"
 const uuid_valueZ = "2103"

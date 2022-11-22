@@ -5,7 +5,7 @@
 // https://github.com/ucla-hci/m119/blob/main/m2b_peripheral/m2b_peripheral.ino
 // provided as a resource to help us complete this assignment
 
-#define BLE_UUID_ACCELEROMETER_SERVICE "1101"
+#define BLE_UUID_ACCELEROMETER_SERVICE "1866" //1101
 #define BLE_UUID_ACCELEROMETER_X "2101"
 #define BLE_UUID_ACCELEROMETER_Y "2102"
 #define BLE_UUID_ACCELEROMETER_Z "2103"
